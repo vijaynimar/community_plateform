@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <style>
+        /* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    height: 100vh;
+    background: url('https://images.pexels.com/photos/33045/lion-wild-africa-african.jpg?auto=compress&cs=tinysrgb&w=600') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    overflow: hidden;
+}
+
+/* Container styles */
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5); /* Dark overlay for better contrast */
+}
+
+/* Form Box */
+.form-box {
+    background: rgba(0, 0, 0, 0.8);  /* Darker background */
+    padding: 30px 40px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    width: 320px; /* Smaller form box width */
+    transition: transform 0.3s ease-in-out;
+    transform: translateY(-50px);
+}
+
+.form-box:hover {
+    transform: translateY(0); /* Smooth animation on hover */
+}
+
+/* Form Heading */
+h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #ff4081; /* Attractive pink color for heading */
+    font-weight: 600;
+}
+
+/* Input Fields */
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    background-color: #333;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    transition: background-color 0.3s ease-in-out;
+}
+
+input:focus {
+    background-color: #444;
+}
+
+/* Submit Button */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #5c6bc0;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #3f51b5;
+}
+
+/* Error Message */
+#error-message {
+    color: red;
+    font-size: 1rem;
+    margin-top: 10px;
+}
+
+/* Paragraph Text */
+p {
+    margin-top: 20px;
+    font-size: 1rem;
+    color: #ccc;
+}
+
+a {
+    color: #ff4081;
+    text-decoration: none;
+}
+
+/* Media Queries for responsiveness */
+@media (max-width: 400px) {
+    .form-box {
+        width: 90%; /* Responsive width on small screens */
+        padding: 20px;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    input, button {
+        font-size: 1rem;
+        padding: 10px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-box">
+            <h2>Sign Up</h2>
+            <form id="signUpForm">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Sign Up</button>
+            </form>
+            <p id="error-message"></p>
+            <p>Already have an account? <a href="./htmlPages/login.html">Log in</a></p>
+        </div>
+    </div>
+
+</body>
+</html>
+<script>
+    document.getElementById("signUpForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+    
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const errorMessage = document.getElementById("error-message");
+    
+        // Basic validation
+        if (!username || !email || !password) {
+            errorMessage.textContent = "All fields are required!";
+            return;
+        }
+    
+        try {
+            const response = await fetch('http://localhost:3110/signIn', {  // Replace with your API endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, email, password })
+            });
+    
+            const data = await response.json();
+    
+            if (response.status === 201) {
+                alert(data.message);  // Show success message
+                // Optionally, you can redirect the user to a login or dashboard page
+            } else {
+                errorMessage.textContent = data.message;  // Show error message
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            errorMessage.textContent = "Something went wrong, please try again.";
+        }
+    });
+    
+</script>
