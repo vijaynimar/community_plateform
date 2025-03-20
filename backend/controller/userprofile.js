@@ -1,5 +1,5 @@
-import { profile } from "../model/userProfile.js";
-import { user } from "../model/userModel.js"
+import { profile } from "../model/profile.js"
+import { user } from "../model/user.js"
 import path from "path"
 import fs from "fs"
 import {v2} from "cloudinary"
@@ -12,7 +12,7 @@ import "dotenv/config"
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
   
-const profileUpload = async (req, res) => {
+export const profileUpload = async (req, res) => {
       const  token  = req.headers.authorization;
       if (!token) {
           return res.status(404).json({ message: "Token needed" });
@@ -93,7 +93,7 @@ const profileUpload = async (req, res) => {
       }
   };
 
-  const getProfile = async (req, res) => {
+export  const getProfile = async (req, res) => {
     try {
         const token = req.headers.authorization;
 
@@ -143,5 +143,3 @@ const profileUpload = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-  
-export { profileUpload,getProfile}

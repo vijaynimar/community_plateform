@@ -156,7 +156,7 @@
                 if (response.ok) {
                     // If login is successful, store the token and redirect
                     alert('Login successful!');
-                    localStorage.setItem('authToken', result.token); // Store token (optional)
+                    localStorage.setItem('token', result.token); // Store token (optional)
                     window.location.href = 'dashboard.html'; // Redirect to dashboard (example)
                 } else {
                     // Handle errors (e.g., invalid credentials)
