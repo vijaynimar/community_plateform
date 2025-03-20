@@ -8,5 +8,5 @@ const router=Router()
 router.post("/signIn",signIn)
 router.post("/login",login)
 router.post("/profileUpload",profileMulter.single("photo"),profileUpload)
-router.get("/profile",getProfile)
+router.get("/getprofile",getProfile)
 export {router}

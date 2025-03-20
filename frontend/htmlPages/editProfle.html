@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Profile</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fc;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    input[type="file"], input[type="text"], textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    textarea {
+      resize: vertical;
+      height: 100px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .error-message {
+      color: red;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Update Your Profile</h2>
+    
+    <!-- Form with enctype="multipart/form-data" -->
+    <form id="profile-form" enctype="multipart/form-data">
+      <!-- Profile Image Upload -->
+      <label for="photo">Upload Profile Picture</label>
+      <input type="file" id="photo" name="photo" accept="image/*">
+
+      <!-- Skills Input (Comma separated string) -->
+      <label for="skills">Skills</label>
+      <input type="text" id="skills" name="skills" placeholder="Enter your skills (comma separated)">
+
+      <!-- Description Input -->
+      <label for="description">Description</label>
+      <textarea id="description" name="description" placeholder="Tell us about yourself"></textarea>
+
+      <!-- Submit Button -->
+      <button type="submit">Submit</button>
+    </form>
+
+    <div class="error-message" id="error-message" style="display:none;"></div>
+  </div>
+
+  <script>
+    document.getElementById('profile-form').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const formData = new FormData();
+      const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
+      const skills = document.getElementById('skills').value; // Comma separated string of skills
+      const description = document.getElementById('description').value;
+      const photo = document.getElementById('photo').files[0];
+
+      if (!token) {
+        document.getElementById('error-message').style.display = 'block';
+        document.getElementById('error-message').textContent = "User not authenticated. Please log in.";
+        return;
+      }
+
+      // Append form data
+      formData.append('photo', photo);
+      formData.append('skills', skills);  // Skills will be sent as a string (comma separated)
+      formData.append('description', description);
+
+      try {
+        // Send the form data to the server
+        const response = await fetch('http://localhost:3110/profileUpload', {
+          method: 'POST',
+          headers: {
+            'Authorization': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDljNDZmOWNiOGNhY2I4ZGM0YjcyNCIsInVzZXJuYW1lIjoidmlqYXkiLCJlbWFpbCI6InZpamF5QGdtYWlsLmNvbSIsImlhdCI6MTc0MjQ4MjAxNiwiZXhwIjoxNzQyNjU0ODE2fQ.7FkskmHOUPJd70k5CsQ-Smd5qZwoMUfP6QKMhE6zqro"
+          },
+          body: formData
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          alert(result.message); // Success message
+          window.location.href = '/profile.html'; // Redirect to profile page on success
+        } else {
+          document.getElementById('error-message').style.display = 'block';
+          document.getElementById('error-message').textContent = result.message; // Error message
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById('error-message').style.display = 'block';
+        document.getElementById('error-message').textContent = "An error occurred while updating your profile.";
+      }
+    });
+  </script>
+</body>
+</html>

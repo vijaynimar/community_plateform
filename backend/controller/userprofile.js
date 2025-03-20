@@ -13,6 +13,7 @@ import "dotenv/config"
   });
   
 export const profileUpload = async (req, res) => {
+    console.log("line16")
       const  token  = req.headers.authorization;
       if (!token) {
           return res.status(404).json({ message: "Token needed" });
@@ -70,7 +71,7 @@ export const profileUpload = async (req, res) => {
 
           if (existProfile) {
               // If profile exists, update it
-              console.log("existProfile",existProfile)
+            //   console.log("existProfile",existProfile)
             await profile.findByIdAndUpdate(existProfile._id, { $set: updateFields });
               return res.status(200).json({ message: "Profile updated successfully" });
           } else {

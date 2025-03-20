@@ -50,12 +50,6 @@
       background-color: #45a049;
     }
 
-    /* Aside (just an example) */
-    #aside {
-      padding: 20px;
-      background-color: #f4f7fc;
-    }
-
     /* Profile Container */
     .profile-container {
       padding: 20px;
@@ -135,15 +129,12 @@
   <!-- Navbar -->
   <nav id="navbar">
     <ul>
-      <li><a href="/profile">Profile</a></li>
+      <!-- Correct Home link -->
+      <li><a href="dashboard.html">Home</a></li> <!-- Home link goes to dashboard -->
+      <li><a href="profile.html">Profile</a></li>
       <li><a href="/communities">Communities</a></li>
     </ul>
   </nav>
-
-  <!-- Aside -->
-  <aside id="aside">
-    <p>Aside content</p>
-  </aside>
 
   <!-- Profile Container -->
   <div class="profile-container">
@@ -153,7 +144,7 @@
         <div class="profile-picture">
           <img id="profile-picture" src="https://via.placeholder.com/150" alt="Profile">
         </div>
-        <a href="/updateprofile"><button class="edit-profile-btn">Edit Profile</button></a>
+        <a href="editProfile.html"><button class="edit-profile-btn">Edit Profile</button></a>
       </div>
 
       <!-- Profile Info -->
@@ -195,9 +186,9 @@
             return;
           }
 
-          const response = await fetch('https://skill-share-c93a.onrender.com/getprofile', {
+          const response = await fetch('http://localhost:3110/getprofile', {
             headers: {
-              'Authorization': token
+              'Authorization': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDljNDZmOWNiOGNhY2I4ZGM0YjcyNCIsInVzZXJuYW1lIjoidmlqYXkiLCJlbWFpbCI6InZpamF5QGdtYWlsLmNvbSIsImlhdCI6MTc0MjQ4MjAxNiwiZXhwIjoxNzQyNjU0ODE2fQ.7FkskmHOUPJd70k5CsQ-Smd5qZwoMUfP6QKMhE6zqro"
             }
           });
           const data = await response.json();
