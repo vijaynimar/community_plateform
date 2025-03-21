@@ -122,6 +122,61 @@
       font-size: 20px;
       margin-top: 50px;
     }
+
+    /* Posts Section */
+    .posts-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .post {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .post img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .post-description {
+      padding: 10px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .post-stats {
+      padding: 10px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Buttons */
+    .post-buttons {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px;
+    }
+
+    .post-buttons button {
+      padding: 8px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+
+    .post-buttons button:hover {
+      background-color: #45a049;
+    }
   </style>
 </head>
 <body>
@@ -129,8 +184,7 @@
   <!-- Navbar -->
   <nav id="navbar">
     <ul>
-      <!-- Correct Home link -->
-      <li><a href="dashboard.html">Home</a></li> <!-- Home link goes to dashboard -->
+      <li><a href="dashboard.html">Home</a></li>
       <li><a href="profile.html">Profile</a></li>
       <li><a href="/communities">Communities</a></li>
     </ul>
@@ -171,6 +225,9 @@
     </div>
   </div>
 
+  <!-- Posts Section -->
+  <div id="posts-container" class="posts-container"></div>
+
   <div id="loading" class="loading">Loading...</div>
   <div id="error" class="error" style="display:none;">Error fetching profile data.</div>
 
@@ -186,6 +243,7 @@
             return;
           }
 
+          // Fetch user profile data
           const response = await fetch('http://localhost:3110/getprofile', {
             headers: {
               'Authorization': token
@@ -218,7 +276,72 @@
         }
       };
 
-      fetchUserProfile(); // Fetch profile data on page load
+      // Function to fetch user's posts
+      const fetchUserPosts = async () => {
+        try {
+          const token = localStorage.getItem('token'); // Get token from localStorage
+          if (!token) {
+            console.error("No token found in localStorage.");
+            return;
+          }
+
+          const response = await fetch('http://localhost:3110/getAllimage', {
+            headers: {
+              'Authorization': token
+            }
+          });
+
+          const data = await response.json();
+
+          if (data.photos && data.photos.length > 0) {
+            const postsContainer = document.getElementById('posts-container');
+            data.photos.forEach(photo => {
+              const postDiv = document.createElement('div');
+              postDiv.classList.add('post');
+              postDiv.innerHTML = `
+                <img src="${photo.photo}" alt="Post Image">
+                <div class="post-description">${photo.description}</div>
+                <div class="post-buttons">
+                  <button class="like-btn">Like</button>
+                  <button class="comment-btn">Comment</button>
+                </div>
+                <div class="post-stats">
+                  <p><b>${photo.likes}</b> Likes</p>
+                  <p><b>${photo.comments.length}</b> Comments</p>
+                </div>
+              `;
+              postsContainer.appendChild(postDiv);
+
+              // Add event listeners for the like and comment buttons
+              const likeButton = postDiv.querySelector('.like-btn');
+              likeButton.addEventListener('click', () => handleLike(photo.id));
+
+              const commentButton = postDiv.querySelector('.comment-btn');
+              commentButton.addEventListener('click', () => handleComment(photo.id));
+            });
+          } else {
+            const postsContainer = document.getElementById('posts-container');
+            postsContainer.innerHTML = '<p>No posts to display.</p>';
+          }
+        } catch (error) {
+          console.error("Error fetching posts:", error);
+        }
+      };
+
+      // Handle Like button click
+      const handleLike = (postId) => {
+        console.log(`Liked post with ID: ${postId}`);
+        // Logic to handle like (e.g., update the server, etc.)
+      };
+
+      // Handle Comment button click
+      const handleComment = (postId) => {
+        console.log(`Comment on post with ID: ${postId}`);
+        // Logic to handle comment (e.g., open comment modal, etc.)
+      };
+
+      fetchUserProfile(); // Fetch profile data
+      fetchUserPosts(); // Fetch user's posts
     });
   </script>
 

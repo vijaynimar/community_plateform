@@ -81,6 +81,7 @@ export const uploadImage=async(req,res)=>{
 
 export const getAillImage=async(req,res)=>{
     const token=req.headers.authorization
+    // console.log(token);
     if(!token){
         return res.status(404).json({message:"token needed"})
     }
@@ -99,5 +100,14 @@ export const getAillImage=async(req,res)=>{
     }catch(err){
         console.log(err)
         res.status(500).json({message:"error in get all image"})
+    }
+}
+
+export const allImages=async(req,res)=>{
+    try{
+        const photos=await Photo.find()
+        res.status(200).json({message:photos})
+    }catch(err){
+        return res.status(500).json({message:"error in all images"})
     }
 }
