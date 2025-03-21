@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Communities</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fc;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;  /* Adjusted to 50% width */
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 32px;
+      text-align: center;
+      color: #4CAF50;
+      margin-bottom: 20px;
+    }
+
+    .community-list {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .community-item {
+      background-color: #f9f9f9;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .community-item h2 {
+      margin: 0;
+      font-size: 24px;
+      color: #333;
+    }
+
+    .community-item p {
+      margin-top: 5px;
+      font-size: 16px;
+      color: #555;
+    }
+
+    .buttons-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #45a049;
+    }
+
+    .error-message {
+      color: red;
+      text-align: center;
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Communities</h1>
+    <ul id="community-list" class="community-list">
+      <!-- Communities will be dynamically loaded here -->
+    </ul>
+
+    <!-- Error message will be displayed here if there is an issue with the API -->
+    <div id="error-message" class="error-message"></div>
+  </div>
+
+  <script>
+    // Function to fetch community data from the API
+    const fetchCommunities = async () => {
+      try {
+        const response = await fetch('http://localhost:3110/getCommunity');
+        
+        // Check if the response is okay (status code 200-299)
+        if (!response.ok) {
+          throw new Error('Failed to fetch communities');
+        }
+
+        const data = await response.json();
+        
+        // Check if the data is in the expected format
+        if (data && data.data && Array.isArray(data.data)) {
+          const communityList = document.getElementById('community-list');
+          
+          // Loop through each community and create list items
+          data.data.forEach(community => {
+            const li = document.createElement('li');
+            li.classList.add('community-item');
+            li.innerHTML = `
+              <h2>${community.name}</h2>
+              <p>ID: ${community._id}</p>
+            `;
+
+            // Create buttons for "Message" and "Join Community"
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.classList.add('buttons-container');
+            const messageButton = document.createElement('button');
+            messageButton.classList.add('button');
+            messageButton.innerText = 'Message';
+            messageButton.onclick = () => alert(`Message to community: ${community.name}`);
+
+            const joinButton = document.createElement('button');
+            joinButton.classList.add('button');
+            joinButton.innerText = 'Join Community';
+            joinButton.onclick = () => joinCommunity(community.name);
+
+            buttonsContainer.appendChild(messageButton);
+            buttonsContainer.appendChild(joinButton);
+
+            li.appendChild(buttonsContainer);
+            communityList.appendChild(li);
+          });
+        } else {
+          throw new Error('Invalid data format');
+        }
+
+      } catch (error) {
+        // Display error message if there's an issue with the API request
+        const errorMessage = document.getElementById('error-message');
+        errorMessage.textContent = `Error: ${error.message}`;
+      }
+    };
+
+    // Function to handle the join community action
+    const joinCommunity = async (communityName) => {
+      const token = localStorage.getItem('token');  // Assuming the token is saved in localStorage
+
+      if (!token) {
+        alert('You must be logged in to join a community!');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:3110/joinCommunity', {
+          method: 'POST',
+          headers: {
+            'Authorization': `${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name: communityName })
+        });
+
+        const data = await response.json();
+
+        if (data.message === 'joined successfully') {
+          alert('You have joined the community successfully!');
+        } else {
+          alert(data.message || 'Error joining community');
+        }
+      } catch (error) {
+        console.error('Error joining community:', error);
+        alert('An error occurred while joining the community');
+      }
+    };
+
+    // Call the function to fetch communities when the page loads
+    window.onload = fetchCommunities;
+  </script>
+
+</body>
+</html>
