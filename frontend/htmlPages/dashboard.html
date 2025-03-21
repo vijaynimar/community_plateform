@@ -98,6 +98,22 @@
       background-color: #45a049;
     }
 
+    .create-community-btn {
+      display: inline-block;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      padding: 12px 25px;
+      border-radius: 5px;
+      margin-top: 20px;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .create-community-btn:hover {
+      background-color: #45a049;
+    }
+
     /* Styling for images and posts */
     .image-posts-container {
       display: grid;
@@ -254,9 +270,22 @@
     <!-- Create Post Button -->
     <a href="createPost.html" class="create-post-btn">Create Post</a>
 
+    <!-- Create Community Button -->
+    <button class="create-community-btn" id="create-community-btn">Create Community</button>
+
     <!-- Image Posts Section -->
     <div id="image-posts" class="image-posts-container">
       <!-- Images will be dynamically loaded here -->
+    </div>
+  </div>
+
+  <!-- Create Community Popup -->
+  <div id="community-popup" class="popup">
+    <div class="popup-content">
+      <h3>Create Community</h3>
+      <input type="text" id="community-name" placeholder="Enter Community Name">
+      <button id="create-community-submit">Create</button>
+      <button class="close-btn" id="close-community-popup">Close</button>
     </div>
   </div>
 
@@ -276,6 +305,12 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const createCommunityButton = document.getElementById('create-community-btn');
+      const communityPopup = document.getElementById('community-popup');
+      const closeCommunityPopupButton = document.getElementById('close-community-popup');
+      const communityNameInput = document.getElementById('community-name');
+      const createCommunitySubmitButton = document.getElementById('create-community-submit');
+
       const imagePostsContainer = document.getElementById('image-posts');
       const commentPopup = document.getElementById('comment-popup');
       const commentList = document.getElementById('comment-list');
@@ -384,9 +419,56 @@
         }
       });
 
+      // Create Community Popup
+      createCommunityButton.addEventListener('click', () => {
+        communityPopup.style.display = 'flex';
+      });
+
+      // Close the community creation popup
+      closeCommunityPopupButton.addEventListener('click', () => {
+        communityPopup.style.display = 'none';
+      });
+
+      // Handle community creation form submission
+      createCommunitySubmitButton.addEventListener('click', async () => {
+        const communityName = communityNameInput.value.trim();
+        if (communityName) {
+          const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
+
+          try {
+            const response = await fetch('http://localhost:3110/makeCommunity', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token,  // Include token in the request header
+              },
+              body: JSON.stringify({
+                name: communityName
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.message === "communnity made sucessfully") {
+              alert("Community created successfully!");
+              communityPopup.style.display = 'none';  // Close the popup after success
+              communityNameInput.value = '';  // Clear the input field
+            } else {
+              alert("Failed to create community: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error creating community:", error);
+            alert("Error creating community. Please try again.");
+          }
+        } else {
+          alert("Please enter a community name.");
+        }
+      });
+
       // Fetch the image posts when the page loads
       fetchImagePosts();
     });
   </script>
+
 </body>
 </html>
