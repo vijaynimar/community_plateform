@@ -233,7 +233,7 @@
   <!-- Navbar -->
   <div class="navbar">
     <ul>
-      <li><a href="dashboard.html" target="_blank">Home</a></li> <!-- Home link added here -->
+      <li><a href="dashboard.html" target="_blank">Home</a></li>
       <li><a href="profile.html" target="_blank">Profile</a></li>
       <li><a href="communities.html" target="_blank">Communities</a></li>
     </ul>
@@ -281,7 +281,11 @@
       const commentList = document.getElementById('comment-list');
       const newCommentTextarea = document.getElementById('new-comment');
       const closePopupButton = document.getElementById('close-popup');
+      const submitCommentButton = document.getElementById('submit-comment');
       let currentPostId = null;
+
+      // Get the token from localStorage or wherever it's stored
+      const token = localStorage.getItem('token');  // Or use sessionStorage if it's stored there
 
       // Function to fetch image posts
       const fetchImagePosts = async () => {
@@ -335,49 +339,54 @@
 
       // Function to load comments for a specific post
       const loadComments = (postId) => {
-        // Here you can fetch comments from an API or load them directly
-        // This is a placeholder to demonstrate how to load comments dynamically
-        // Simulate loading comments from the server
         commentList.innerHTML = '';
-        fetch(`http://localhost:3110/getComments?postId=${postId}`)
+        fetch(`http://localhost:3110/getAllComments/${postId}`)
           .then(res => res.json())
           .then(data => {
             data.comments.forEach(comment => {
               const commentDiv = document.createElement('p');
-              commentDiv.textContent = comment;
+              commentDiv.textContent = `${comment.username}: ${comment.text}`;
               commentList.appendChild(commentDiv);
             });
           })
-          .catch(error => console.error('Error loading comments:', error));
+          .catch(err => console.error('Error loading comments:', err));
       };
 
-      // Post a new comment
-      document.getElementById('submit-comment').addEventListener('click', () => {
-        const newComment = newCommentTextarea.value;
-        if (newComment.trim() && currentPostId) {
-          // Here you would send the new comment to the backend
-          fetch('http://localhost:3110/addComment', {
+      // Submit a new comment
+      submitCommentButton.addEventListener('click', async () => {
+        const commentText = newCommentTextarea.value.trim();
+        if (commentText === '') {
+          alert('Comment cannot be empty');
+          return;
+        }
+
+        try {
+          const response = await fetch(`http://localhost:3110/commentPost/${currentPostId}`, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
+              'Authorization': `${token}`,
+              'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-              postId: currentPostId,
-              comment: newComment
-            })
-          })
-          .then(res => res.json())
-          .then(() => {
-            loadComments(currentPostId); // Reload comments
-            newCommentTextarea.value = ''; // Clear input
-          })
-          .catch(error => console.error('Error adding comment:', error));
+            body: JSON.stringify({ text: commentText })
+          });
+
+          const result = await response.json();
+
+          if (result.message === "comment added successfully") {
+            alert('Comment added successfully');
+            loadComments(currentPostId);  // Reload comments after posting
+            newCommentTextarea.value = '';
+          } else {
+            alert(result.message || 'Error adding comment');
+          }
+        } catch (error) {
+          console.error('Error posting comment:', error);
         }
       });
 
+      // Fetch the image posts when the page loads
       fetchImagePosts();
     });
   </script>
-
 </body>
 </html>

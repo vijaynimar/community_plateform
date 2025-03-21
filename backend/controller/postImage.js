@@ -12,23 +12,24 @@ v2.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
 export const uploadImage=async(req,res)=>{
+    // console.log(req.body);
+    console.log("line 15");
     const token=req.headers.authorization
-    // console.log(token);
+    console.log(token);
     if(!token){
         return res.status(404).json({message:"token needed"})
     }
     const {description}=req.body
-    // console.log(description);
-    
+    console.log(description);
+    let photo;
+    if(req.file){
+        photo=req.file.path
+    }
     try{
-        let photo;
-        if(req.file){
-            photo=req.file.path
-        }
         const decoded=jwt.verify(token,process.env.JWT_SECRET_KEY)
 
         const {email,username}=decoded
-        // console.log(email,username)
+        console.log(token)
         const userExist=await user.findOne({email:email})
         if(!userExist){
             return res.status(400).json({message:"user not exist"})
@@ -56,7 +57,6 @@ export const uploadImage=async(req,res)=>{
             likes:0
         })
         const photo_id=await newPhoto.save()
-        // console.log(photo_id);
         const userpostExist=await Images.findOne({email:email})
         // console.log(userpostExist)
         if(userpostExist){
@@ -81,7 +81,6 @@ export const uploadImage=async(req,res)=>{
 
 export const getAillImage=async(req,res)=>{
     const token=req.headers.authorization
-    // console.log(token);
     if(!token){
         return res.status(404).json({message:"token needed"})
     }
@@ -100,14 +99,5 @@ export const getAillImage=async(req,res)=>{
     }catch(err){
         console.log(err)
         res.status(500).json({message:"error in get all image"})
-    }
-}
-
-export const allImages=async(req,res)=>{
-    try{
-        const photos=await Photo.find()
-        res.status(200).json({message:photos})
-    }catch(err){
-        return res.status(500).json({message:"error in all images"})
     }
 }
