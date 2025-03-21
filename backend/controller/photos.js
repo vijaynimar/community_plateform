@@ -1,27 +1,34 @@
 import { Photo } from "../model/photos.js";
 import { user } from "../model/user.js";
 import { Images } from "../model/allImages.js";
-import { profile } from "../model/userProfile.js";
+import { profile } from "../model/profile.js";
 import jwt from "jsonwebtoken"
 import {v2} from "cloudinary"
 import fs from "fs"
 import "dotenv/config"
-
+v2.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
 export const uploadImage=async(req,res)=>{
     const token=req.headers.authorization
+    // console.log(token);
     if(!token){
         return res.status(404).json({message:"token needed"})
     }
     const {description}=req.body
-    let photo;
-    if(req.file){
-        photo=req.file.path
-    }
+    // console.log(description);
+    
     try{
+        let photo;
+        if(req.file){
+            photo=req.file.path
+        }
         const decoded=jwt.verify(token,process.env.JWT_SECRET_KEY)
 
         const {email,username}=decoded
-        console.log(email)
+        // console.log(email,username)
         const userExist=await user.findOne({email:email})
         if(!userExist){
             return res.status(400).json({message:"user not exist"})
@@ -49,6 +56,7 @@ export const uploadImage=async(req,res)=>{
             likes:0
         })
         const photo_id=await newPhoto.save()
+        // console.log(photo_id);
         const userpostExist=await Images.findOne({email:email})
         // console.log(userpostExist)
         if(userpostExist){

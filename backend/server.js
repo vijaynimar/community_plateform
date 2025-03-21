@@ -5,6 +5,7 @@ import { router } from './router/router.js';
 const app=express()
 app.use(cors())
 app.use(express.json());
+
 const port = 3110
 app.use(router)
 connection()

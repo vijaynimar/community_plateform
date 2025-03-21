@@ -3,7 +3,7 @@ import "dotenv/config"
 
  const tokenVerify=async(req,res,next)=>{
     const token=req.headers["authorization"]
-
+    console.log("verified token");
     try{
         const verification= jwt.verify(token,process.env.JWT_SECRET_KEY)
     
