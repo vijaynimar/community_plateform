@@ -5,17 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Communities</title>
   <style>
+    /* General Styles */
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f7fc;
-      color: #333;
       margin: 0;
       padding: 0;
+      background-color: #f4f4f4;
+      color: #333;
     }
 
     .container {
-      max-width: 600px;  /* Adjusted to 50% width */
-      margin: 20px auto;
+      width: 60%;
+      margin: 30px auto;
       padding: 20px;
       background-color: #fff;
       border-radius: 10px;
@@ -23,10 +24,7 @@
     }
 
     h1 {
-      font-size: 32px;
       text-align: center;
-      color: #4CAF50;
-      margin-bottom: 20px;
     }
 
     .community-list {
@@ -36,49 +34,91 @@
 
     .community-item {
       background-color: #f9f9f9;
-      padding: 15px;
-      margin-bottom: 15px;
+      padding: 20px;
+      margin: 10px 0;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
-    .community-item h2 {
-      margin: 0;
-      font-size: 24px;
-      color: #333;
-    }
-
-    .community-item p {
-      margin-top: 5px;
-      font-size: 16px;
-      color: #555;
-    }
-
     .buttons-container {
-      margin-top: 20px;
-      display: flex;
-      justify-content: space-between;
+      margin-top: 15px;
     }
 
     .button {
-      background-color: #4CAF50;
-      color: white;
       padding: 10px 20px;
+      margin: 5px;
+      background-color: #007bff;
+      color: white;
+      border: none;
       border-radius: 5px;
       cursor: pointer;
-      border: none;
-      transition: background-color 0.3s ease;
     }
 
     .button:hover {
-      background-color: #45a049;
+      background-color: #0056b3;
     }
 
-    .error-message {
-      color: red;
-      text-align: center;
-      font-size: 18px;
-      margin-top: 20px;
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 500px;
+      max-height: 80%;
+      overflow-y: auto;
+    }
+
+    .message-list {
+      margin-bottom: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .message-item {
+      background-color: #efefef;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+
+    .message-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message-input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      resize: none;
+    }
+
+    .close-btn {
+      padding: 10px 20px;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      align-self: flex-end;
+    }
+
+    .close-btn:hover {
+      background-color: #c82333;
     }
   </style>
 </head>
@@ -89,29 +129,34 @@
     <ul id="community-list" class="community-list">
       <!-- Communities will be dynamically loaded here -->
     </ul>
+  </div>
 
-    <!-- Error message will be displayed here if there is an issue with the API -->
-    <div id="error-message" class="error-message"></div>
+  <!-- Message Popup -->
+  <div id="message-popup" class="popup">
+    <div class="popup-content">
+      <h3>Messages</h3>
+      <div id="message-list" class="message-list">
+        <!-- Messages will be dynamically loaded here -->
+      </div>
+      <div class="message-form">
+        <textarea id="new-message" class="message-input" rows="4" placeholder="Type a message..."></textarea>
+        <button class="button" id="send-message">Send Message</button>
+        <button class="close-btn" id="close-popup">Close</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    // Function to fetch community data from the API
+    let currentCommunityName = "";
+
+    // Fetch communities
     const fetchCommunities = async () => {
       try {
         const response = await fetch('http://localhost:3110/getCommunity');
-        
-        // Check if the response is okay (status code 200-299)
-        if (!response.ok) {
-          throw new Error('Failed to fetch communities');
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch communities');
         const data = await response.json();
-        
-        // Check if the data is in the expected format
-        if (data && data.data && Array.isArray(data.data)) {
+        if (data && data.data) {
           const communityList = document.getElementById('community-list');
-          
-          // Loop through each community and create list items
           data.data.forEach(community => {
             const li = document.createElement('li');
             li.classList.add('community-item');
@@ -119,14 +164,13 @@
               <h2>${community.name}</h2>
               <p>ID: ${community._id}</p>
             `;
-
-            // Create buttons for "Message" and "Join Community"
             const buttonsContainer = document.createElement('div');
             buttonsContainer.classList.add('buttons-container');
+
             const messageButton = document.createElement('button');
             messageButton.classList.add('button');
             messageButton.innerText = 'Message';
-            messageButton.onclick = () => alert(`Message to community: ${community.name}`);
+            messageButton.onclick = () => openMessagePopup(community.name);
 
             const joinButton = document.createElement('button');
             joinButton.classList.add('button');
@@ -135,25 +179,105 @@
 
             buttonsContainer.appendChild(messageButton);
             buttonsContainer.appendChild(joinButton);
-
             li.appendChild(buttonsContainer);
             communityList.appendChild(li);
           });
-        } else {
-          throw new Error('Invalid data format');
         }
-
       } catch (error) {
-        // Display error message if there's an issue with the API request
-        const errorMessage = document.getElementById('error-message');
-        errorMessage.textContent = `Error: ${error.message}`;
+        alert('Error loading communities: ' + error.message);
       }
     };
 
-    // Function to handle the join community action
-    const joinCommunity = async (communityName) => {
-      const token = localStorage.getItem('token');  // Assuming the token is saved in localStorage
+    // Open the message popup
+    const openMessagePopup = async (communityName) => {
+      currentCommunityName = communityName;
+      document.getElementById('message-popup').style.display = 'flex';
+      await loadMessages(communityName);
+    };
 
+    // Close the message popup
+    document.getElementById('close-popup').addEventListener('click', () => {
+      document.getElementById('message-popup').style.display = 'none';
+    });
+    const loadMessages = async (communityName) => {
+        try {
+            const token = localStorage.getItem('token'); // Get token from local storage
+            const response = await fetch(`http://localhost:3110/getMessage/${communityName}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `${token}`, // Pass token in the Authorization header
+                }
+            });
+    
+            const data = await response.json();
+            console.log('Response from server:', data); // Log response to check structure
+    
+            // Check for errors in the response
+            if (data.message) {
+                alert(data.message);  // If there's an error message from the backend, display it
+            }
+    
+            const messageList = document.getElementById('message-list'); // Get the message list container
+            messageList.innerHTML = '';  // Clear previous messages
+    
+            // Check if messages are present and correctly formatted
+            if (data.messages && Array.isArray(data.messages)) {
+                data.messages.forEach(msg => {
+                    const messageItem = document.createElement('div');
+                    const messageContent = `${msg.username}: ${msg.messages}`; // Use msg.messages to get the message text
+    
+                    // Optionally, include the user's image (if available)
+                    const userImage = msg.image ? `<img src="${msg.image}" alt="${msg.username}'s avatar" style="width:30px; height:30px; border-radius:50%;">` : '';
+    
+                    messageItem.innerHTML = `${userImage} ${messageContent}`; // Add image and message content
+                    messageList.appendChild(messageItem); // Append the message item to the list
+                });
+            } else {
+                console.log('No messages found or wrong data format');
+            }
+        } catch (error) {
+            console.error('Error loading messages:', error);  // Log any error that occurs during the fetch request
+        }
+    };
+    
+
+    // Send a new message
+    document.getElementById('send-message').addEventListener('click', async () => {
+      const newMessage = document.getElementById('new-message').value.trim();
+      if (newMessage === '') {
+        alert('Message cannot be empty');
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:3110/postMessage', {
+          method: 'POST',
+          headers: {
+            'Authorization': ` ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: currentCommunityName,
+            message: newMessage
+          })
+        });
+        const data = await response.json();
+        if (data.message === 'Message sent successfully') {
+          alert('Message sent successfully');
+          loadMessages(currentCommunityName); // Reload messages after sending
+          document.getElementById('new-message').value = '';
+        } else {
+          alert(data.message || 'Error sending message');
+        }
+      } catch (error) {
+        alert('Error sending message: ' + error.message);
+      }
+    });
+
+    // Join community logic
+    const joinCommunity = async (communityName) => {
+      const token = localStorage.getItem('token');
       if (!token) {
         alert('You must be logged in to join a community!');
         return;
@@ -163,7 +287,7 @@
         const response = await fetch('http://localhost:3110/joinCommunity', {
           method: 'POST',
           headers: {
-            'Authorization': `${token}`,
+            'Authorization': ` ${token}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ name: communityName })
@@ -177,7 +301,6 @@
           alert(data.message || 'Error joining community');
         }
       } catch (error) {
-        console.error('Error joining community:', error);
         alert('An error occurred while joining the community');
       }
     };

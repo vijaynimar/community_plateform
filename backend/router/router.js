@@ -5,7 +5,7 @@ import { profileUpload } from "../controller/userprofile.js";
 import { getProfile } from "../controller/userprofile.js";
 import { commentPost ,getAllComments} from "../controller/comments.js";
 import { uploadImage ,getAillImage,allImages} from "../controller/photos.js";
-import { makeCommunity,showAllCommunity,joinCommunity } from "../controller/community.js";
+import { makeCommunity,showAllCommunity,joinCommunity,getMessage ,commMessage} from "../controller/community.js";
 const router=Router()
 router.post("/signIn",signIn)
 router.post("/login",login)
@@ -19,4 +19,6 @@ router.get("/getAllComments/:postId",getAllComments)
 router.post("/makeCommunity",makeCommunity)
 router.get("/getCommunity",showAllCommunity)
 router.post("/joinCommunity",joinCommunity)
+router.get("/getMessage/:name",getMessage)
+router.post("/postMessage",commMessage)
 export {router}
